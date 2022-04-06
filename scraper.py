@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv # telegram api key
+from dotenv import load_dotenv 
 import requests
 import pandas as pd
 import websocket, json
@@ -10,6 +10,13 @@ load_dotenv()
 
 coins= ['btcusdt', 'ethusdt', 'ltcusdt', 'xrpusdt', 'xmrusdt', 'beamusdt']
 INTERVAL = '1m'
+
+def main(coin):
+    data = get_data(coin)
+    file_path = generate_df(data[0]['s'], data)
+    send_message(file_path)
+    os.remove(file_path)
+
 
 def get_data(coin):
     
@@ -35,11 +42,11 @@ def get_data(coin):
         if len(x) == 2:
             ws1.close(websocket.STATUS_PROTOCOL_ERROR)
             break
-
-    file_path = generate_df(x[0]['s'], x)
-    send_message(file_path)
-    os.remove(file_path)
+    data = x.copy()
     x.clear()
+    return data
+    
+    
 
 def generate_df(name, x):
     
@@ -106,12 +113,12 @@ def run_parallel():
   
     # map the function to the list and pass 
     # function and list_ranges as arguments
-    pool.map(get_data, list_ranges)
+    pool.map(main, list_ranges)
 
 # Driver code
 if __name__ == '__main__':
     while True:
         run_parallel()
-        break
+        
     
        
